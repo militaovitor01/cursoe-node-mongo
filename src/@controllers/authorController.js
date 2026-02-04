@@ -1,5 +1,5 @@
 import res from "express/lib/response.js";
-import book, { author } from "../@models/Author.js";
+import { author } from "../@models/Author.js";
 
 
 class AuthorController {

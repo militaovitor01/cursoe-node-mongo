@@ -1,5 +1,6 @@
 import res from "express/lib/response.js";
 import book from "../@models/Books.js";
+import { author } from "../@models/Author.js";
 
 
 class BookController {
@@ -13,8 +14,13 @@ class BookController {
     }
 
     static async registerBooks(req, res) {
+        const newBook = req.body;
+
         try{
-            const newBook = await book.create(req.body);
+            const authorFound = await author.findById(newBook.author);
+            const completeBook = {...newBook, author: {...authorFound._doc}};
+
+            const createBook = await book.create(completeBook);
             res.status(201).json({messege:"Livro criado com sucesso", livro: newBook});
         }catch(error) {
             res.status(500).json({messege: `${error.messege} - Falha ao cadastrar livro`})
@@ -48,6 +54,16 @@ class BookController {
             res.status(200).send("Livro removido com sucesso");
         } catch (error) {
             res.status(500).json({messege: `${error.messege} - Erro ao tentar deletar livro!`});
+        }
+    }
+
+    static async listBooksPublisher(req, res) {
+        const publisher = req.query.publisher;
+        try {
+            const booksPublisher = await book.find({publisher: publisher});
+            res.status(200).json(booksPublisher);
+        } catch (error) {
+            res.status(500).json({messege: `${error.messege} - Erro ao buscar livro!`});
         }
     }
 }
