@@ -1,9 +1,10 @@
 import res from "express/lib/response.js";
 import { author } from "../@models/Author.js";
+import mongoose from "mongoose";
 
 
 class AuthorController {
-    static async listAuthors(req, res) {
+    static listAuthors = async (req, res) => {
         try{
             const listAuthors = await author.find({});
             res.status(200).json(listAuthors);
@@ -12,7 +13,7 @@ class AuthorController {
         }   
     }
 
-    static async registerAuthors(req, res) {
+    static registerAuthors = async (req, res) => {
         try{
             const newAuthor = await author.create(req.body);
             res.status(201).json({messege:"Livro criado com sucesso", livro: newAuthor});
@@ -21,17 +22,26 @@ class AuthorController {
         }   
     }
 
-    static async listAuthorID(req, res) {
+    static listAuthorID = async (req, res) => {
         try{
             const id = req.params.id;
             const authorFound = await author.findById(id);
-            res.status(200).json(authorFound);
+
+            if(authorFound != null){
+                res.status(200).send(authorFound);
+            }else {
+                res.status(404).send({messege: "ID não localizado"});
+            }
         }catch(error){
-            res.status(500).json({messege: `${error.messege} - Falha ao encontrar livro`});
+            if(error instanceof mongoose.Error.CastError){
+                res.status(400).send({messege: "Os dados fornecidos estão incorretos"});    
+            }else{
+                res.status(500).send({messege: "Falha no servidor"});
+            }
         }   
     }
 
-    static async updateAuthor(req, res) {
+    static updateAuthor = async (req, res) => {
         try{
             const id = req.params.id;
             const authorFound = await author.findByIdAndUpdate(id, req.body);
@@ -41,7 +51,7 @@ class AuthorController {
         }  
     }
 
-    static async deleteAuthor(req, res) {
+    static deleteAuthor = async (req, res) => {
         try {
             const id = req.params.id;
             const authorFound = await author.findByIdAndDelete(id);
