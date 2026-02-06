@@ -1,28 +1,27 @@
 import res from "express/lib/response.js";
 import { author } from "../@models/Author.js";
-import mongoose from "mongoose";
 
 
 class AuthorController {
-    static listAuthors = async (req, res) => {
+    static listAuthors = async (req, res, next) => {
         try{
             const listAuthors = await author.find({});
             res.status(200).json(listAuthors);
         }catch(error){
-            res.status(500).json({messege: `${error.messege} - Falha ao listar Autores`});
+            next(error);
         }   
     }
 
-    static registerAuthors = async (req, res) => {
+    static registerAuthors = async (req, res, next) => {
         try{
             const newAuthor = await author.create(req.body);
             res.status(201).json({messege:"Livro criado com sucesso", livro: newAuthor});
         }catch(error) {
-            res.status(500).json({messege: `${error.messege} - Falha ao cadastrar livro`})
+            next(error);
         }   
     }
 
-    static listAuthorID = async (req, res) => {
+    static listAuthorID = async (req, res, next) => {
         try{
             const id = req.params.id;
             const authorFound = await author.findById(id);
@@ -33,31 +32,27 @@ class AuthorController {
                 res.status(404).send({messege: "ID não localizado"});
             }
         }catch(error){
-            if(error instanceof mongoose.Error.CastError){
-                res.status(400).send({messege: "Os dados fornecidos estão incorretos"});    
-            }else{
-                res.status(500).send({messege: "Falha no servidor"});
-            }
+            next(error);
         }   
     }
 
-    static updateAuthor = async (req, res) => {
+    static updateAuthor = async (req, res, next) => {
         try{
             const id = req.params.id;
-            const authorFound = await author.findByIdAndUpdate(id, req.body);
+            await author.findByIdAndUpdate(id, req.body);
             res.status(200).json({messege: "Livro Atualizado!"});
         }catch(error){
-            res.status(500).json({messege: "Falha ao atualizado o livro"});
+            next(error);
         }  
     }
 
-    static deleteAuthor = async (req, res) => {
+    static deleteAuthor = async (req, res, next) => {
         try {
             const id = req.params.id;
-            const authorFound = await author.findByIdAndDelete(id);
+            await author.findByIdAndDelete(id);
             res.status(200).send("Livro removido com sucesso");
         } catch (error) {
-            res.status(500).json({messege: `${error.messege} - Erro ao tentar deletar livro!`});
+            next(error);
         }
     }
 }
